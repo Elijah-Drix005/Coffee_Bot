@@ -1,13 +1,16 @@
-## WEEKLY GOALS:
-### create 3 new analysis commands (0/3)
+WEEKLY GOALS:
+-create 3 new analysis commands (0/3)
 
-### verify full functionality of existing analysis comands 
+-verify full functionality of existing analysis comands 
+>num: 
+>Word_Count:
+>Longest average: 
+>HeatMap: 
+-go through code and add comments for my reunderstanding of code 
 
-### go through code and add comments for my reunderstanding of code 
+-integrate codeclean into bot
 
-###integrate codeclean into bot
+-create function that allows for combining of name terms (so multiple tuppers adressing same character can be treated as one. 
 
-### create function that allows for combining of name terms (so multiple tuppers adressing same character can be treated as one. 
-
-### add local enviroment handling so I dont leak my bot token and can make this github public 
+-add local enviroment handling so I dont leak my bot token and can make this github public 
 (DONE 11/3/25)
