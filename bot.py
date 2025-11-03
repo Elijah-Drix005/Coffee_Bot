@@ -384,4 +384,4 @@ async def heatmap(ctx):
 
 
 
-bot.run("DISCORD_TOKEN")  
+bot.run("token")  
