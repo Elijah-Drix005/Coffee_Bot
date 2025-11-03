@@ -141,7 +141,7 @@ async def word_count(ctx, phrase: str, tup_name: str = None):
         if tup_name:
             cursor.execute("SELECT count(*) FROM messages WHERE char_name = ? AND LOWER(content) LIKE ?", (tup_name, f'%{phrase.lower()}%'))
         else:
-            cursor.execture("SELECT count(*) FROM messages WHERE LOWER(content) LIKE ?", (f'%{phrase.lower()}%'))
+            cursor.execute("SELECT count(*) FROM messages WHERE LOWER(content) LIKE ?", (f'%{phrase.lower()}%'))
         messages = cursor.fetchall()
         conn.close()
 
