@@ -5,6 +5,7 @@ import datetime
 import asyncio
 import os
 from dotenv import load_dotenv
+import re
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 
@@ -17,39 +18,45 @@ token = os.getenv('DISCORD_TOKEN')
 # 3. Run the bot:
 #    python bot.py
 intents = discord.Intents.default()
-intents.messages = True
+intents.messages = True #To access Messages I beleive 
 intents.message_content = True  # Needed to read messages
 
 bot = commands.Bot(command_prefix='coffee: ', intents=intents)
 
-conn = sqlite3.connect('messages.db')
-cursor = conn.cursor()
+conn = sqlite3.connect('messages.db') #command to access the database, if generalized, need to term which database
+cursor = conn.cursor() #the cursor allowing it to browse through the data 
 
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS messages(
+cursor.execute(''' 
+    CREATE TABLE IF NOT EXISTS messages( 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         char_name TEXT,
         content TEXT,
         timestamp TEXT,
-        channel_name TEXT
+        channel_name TEXT,
+        Char_key TEXT DEFAULT 'NA'
    )
-''')
+''') #creates table messages with id(likely just to organize data, not needed?), char_name (tupper name), content(message),
+#timestamp of message (In utc + 11 if my calculations are correct), channel name, and character key to designated multiple tuppers as same character
+#to be set later on
 
-conn.commit()
+conn.commit() #this command finalizes a change to a data set
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')  # Confirms bot is online
+#overall, will likely need to change this to an on start/setup command, assuming this wil be a bot that runs constantly, only needed once
 
+@bot.event #discord command designating a bot occasion
+async def on_ready(): #this is when the bot goes online, 
+    print(f'Logged in as {bot.user}')  # Confirms bot is online, prints in terminal
 
-@bot.command()
+#THIS SPOT RESERVED FOR EVENTUAL SETUP HOOK
+
+@bot.command() #designates a command
 async def scrape(ctx, channel: discord.TextChannel): #collects message history from mentioned channel, Coffee: scrape @channel 
-    await ctx.send(f'Remembering the good times from {channel.mention}...')
+    await ctx.send(f'Remembering the good times from {channel.mention}...') #ctx.send means sending a message
 
-    count = 0 
-    async for message in channel.history(limit=None):
-        if message.webhook_id is not None:
-            char_name = message.author.name
+    count = 0 #count initalized to prevent scraping limits and getting bot banned
+    async for message in channel.history(limit=None): #access channel.history
+        if message.webhook_id is not None: #if a webhook
+            char_name = message.author.name #works to collect name even with nature of tupper
             content = message.content
             timestamp = message.created_at.strftime('%Y-%m-%d %H:%M:%S')
             channel_name = message.channel.name
@@ -90,8 +97,8 @@ async def num(ctx, tup_name: str): #counts num of mssgs from specific tupper
         else:
             await ctx.send(f"No messages found! are you sure your using the right name?")
     except Exception as e:
-        await ctx.send(f"An error occurred: {e}")   
-@bot.command()
+        await ctx.send(f"An error occurred: {e}")   #works as intended
+@bot.command() #WILl NEED TO MAKE THIS A ADMIN ONLY COMMAND
 async def soft_reset(ctx, date: str):  
     """
     Deletes messages before a given date (YYYY-MM-DD).
@@ -119,7 +126,7 @@ async def soft_reset(ctx, date: str):
         await ctx.send(f"An error occurred: {e}")
 
 @bot.command()
-async def word_count(ctx, phrase: str, tup_name: str):
+async def word_count(ctx, phrase: str, tup_name: str = None):
     """
     Counts the number of times a word or phrase appears in a tupper's messages.
     Example usage: coffee: word_count "hello world" TupperName
@@ -130,15 +137,36 @@ async def word_count(ctx, phrase: str, tup_name: str):
     try:
         conn = sqlite3.connect('messages.db')
         cursor = conn.cursor()
-
-        cursor.execute("SELECT count(*) FROM messages WHERE char_name = ? AND LOWER(content) LIKE ?", (tup_name, f'%{phrase.lower()}%'))
-        result = cursor.fetchone()
-
-        count = result[0]
-
+        
+        if tup_name:
+            cursor.execute("SELECT count(*) FROM messages WHERE char_name = ? AND LOWER(content) LIKE ?", (tup_name, f'%{phrase.lower()}%'))
+        else:
+            cursor.execture("SELECT count(*) FROM messages WHERE LOWER(content) LIKE ?", (f'%{phrase.lower()}%'))
+        messages = cursor.fetchall()
         conn.close()
 
-        await ctx.send(f"**{tup_name}** has said \"{phrase}\" {count} times!")
+        pattern = re.compile(rf'(?<!\w)[\*_]*{re.escape(phrase)}[\*_]*(?!\w)', re.IGNORECASE) #tells discord to ignore these symbols when next
+
+        if tup_name: 
+            total = sum(len(pattern.findall(msg.lower())) for _, msg in messages)     
+            await ctx.send(f"**{tup_name}** has said \"{phrase}\" {count} times!")
+        else: 
+            counts = {}
+            for char_name, msg in messages:
+                matches = len(pattern.findall(msg.lower()))
+                if matches > 0:
+                    counts[char_name] = counts.get(char_name, 0) + matches
+            if not counts: 
+                await ctx.send(f"No one has said \"{phrase}\" yet...")
+                return
+                
+            sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse =True)
+            top_results = "\n".join(f"**{name}** - {count} times" for name, count in sorted_counts[:10]
+            for name, count in sorted_counts:
+                grd_total = grd_total + count
+
+            await ctx.send(f"\"{phrase}\" has been sent {grd_total} times! heres a leaderboard: \n{top_results}")
+                
     except Exception as e:
         await ctx.send(f"⚠️ Error while counting phrase: {e}")
 
@@ -268,7 +296,7 @@ async def scrape_from(ctx, *, since: str):
             #1394036402911707267,
             #1394036554967814268,
             #1394036626040033401
-            1394036476190261362
+            #1394036476190261362
 
         ] 
 
