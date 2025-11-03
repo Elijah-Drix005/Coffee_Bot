@@ -139,17 +139,17 @@ async def word_count(ctx, phrase: str, tup_name: str = None):
         cursor = conn.cursor()
         
         if tup_name:
-            cursor.execute("SELECT count(*) FROM messages WHERE char_name = ? AND LOWER(content) LIKE ?", (tup_name, f'%{phrase.lower()}%'))
+            cursor.execute("SELECT content FROM messages WHERE char_name = ? AND LOWER(content) LIKE ?", (tup_name, f'%{phrase.lower()}%'))
         else:
-            cursor.execute("SELECT count(*) FROM messages WHERE LOWER(content) LIKE ?", (f'%{phrase.lower()}%'))
+            cursor.execute("SELECT char_name, content FROM messages WHERE LOWER(content) LIKE ?", (f'%{phrase.lower()}%',))
         messages = cursor.fetchall()
         conn.close()
 
         pattern = re.compile(rf'(?<!\w)[\*_]*{re.escape(phrase)}[\*_]*(?!\w)', re.IGNORECASE) #tells discord to ignore these symbols when next
 
         if tup_name: 
-            total = sum(len(pattern.findall(msg.lower())) for _, msg in messages)     
-            await ctx.send(f"**{tup_name}** has said \"{phrase}\" {count} times!")
+            total = sum(len(pattern.findall(msg[0].lower())) for msg in messages)     
+            await ctx.send(f"**{tup_name}** has said \"{phrase}\" {total} times!")
         else: 
             counts = {}
             for char_name, msg in messages:
@@ -162,8 +162,9 @@ async def word_count(ctx, phrase: str, tup_name: str = None):
                 
             sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse =True)
             top_results = "\n".join(f"**{name}** - {count} times" for name, count in sorted_counts[:10])
+            grd_total = 0
             for name, count in sorted_counts:
-                grd_total = grd_total + count
+                grd_total += count
 
             await ctx.send(f"\"{phrase}\" has been sent {grd_total} times! heres a leaderboard: \n{top_results}")
                 
@@ -384,4 +385,4 @@ async def heatmap(ctx):
 
 
 
-bot.run("TOKEN")  
+bot.run(TOKEN)
