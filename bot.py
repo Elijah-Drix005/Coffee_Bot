@@ -161,7 +161,7 @@ async def word_count(ctx, phrase: str, tup_name: str = None):
                 return
                 
             sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse =True)
-            top_results = "\n".join(f"**{name}** - {count} times" for name, count in sorted_counts[:10]
+            top_results = "\n".join(f"**{name}** - {count} times" for name, count in sorted_counts[:10])
             for name, count in sorted_counts:
                 grd_total = grd_total + count
 
