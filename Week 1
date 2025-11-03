@@ -14,3 +14,9 @@ WEEKLY GOALS:
 
 -add local enviroment handling so I dont leak my bot token and can make this github public 
 (DONE 11/3/25)
+
+BRAIN DUMPS: 
+>I keep thinking about how I want to make this accesible in multiple servers, creating another databse "master" that creates a nexus for all servers so it would need, the name/id of the server, an authorized user section for data changing, a designated data base, a time zone to display all data in, a password to give authroity, etc.
+>in terms of this thinking of creating a whole setup command that takes user through this process to set columns in this master database
+>with channel scraping, considering making it so bot scrapes all channels available to it, and instructing user to create roles that hide it from other roles, as creating a channel_ID in master would need to be long list of ID's and unconfident about ability to design bot around this
+>REALLY late game (like cant even afford to think about right now) later on maybe training AI to recognize users requests and direct them to specific commands. 
