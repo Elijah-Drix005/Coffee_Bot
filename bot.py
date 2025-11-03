@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 import re
 load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 
 # To run the bot:
@@ -384,4 +384,4 @@ async def heatmap(ctx):
 
 
 
-bot.run("token")  
+bot.run("TOKEN")  
