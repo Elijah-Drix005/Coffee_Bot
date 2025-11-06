@@ -381,7 +381,54 @@ async def heatmap(ctx):
     except Exception as e:
         await ctx.send(f"Error while generating heatmap: {e}")
 
+@bot.command()
+async def reply_cutoff(ctx) #cleans the code
+    try:
+        conn = sqlite.connect('messages.db')
+        cursor = conn.cursor()
 
+        cursor.execute("SELECT rowid, content FROM messages")
+        rows = cursor.fetchall()
+
+        total_checked = 0
+        total_cleaned = 0
+
+        for rowid, content in rows:
+            lines = content.split('\n')
+            total_checked += 1
+
+            if len(lines) >= 2 and lines[0].startswith('> [Reply to]'):
+                cleaned_content = '\n'.join(lines[2:])
+
+                cursor.execute("UPDATE messages SET content = ? WHERE rowid = ?", (cleaned_content, rowid))
+                total_cleaned += 1 
+                if total_cleaned % 100 == 0: 
+                    print(f"Cleaned {total_cleaned} messages so far...")
+
+        await ctx.send(f"{total_checked} messages were checked and {total_cleaned} messages are about to be edited. if you are sure you want to do this {ctx.author.mention}? type YES/NO to confirm.")
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel
+ 
+        try: 
+            msg = await. bot.wait_for("message", check=check, timeout=30.0)
+            content = msg.content
+
+            if content == "YES":
+                await ctx.send("confirmed, data has been cleaned!")
+                conn.commit()
+                conn.close()
+            elif: content == "NO":
+                await ctx.send("Action aborted.")
+                return
+            else:
+                await ctx.send("I dont think I understand you, please run this command again.")
+
+        except asyncio.TimeoutError: 
+            await ctx.send("You took to long, nevermind...")
+            return
+
+        
+        
 
 
 
