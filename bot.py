@@ -35,13 +35,78 @@ cursor.execute('''
         channel_name TEXT,
         Char_key TEXT DEFAULT 'NA'
    )
-''') #creates table messages with id(likely just to organize data, not needed?), char_name (tupper name), content(message),
+''')
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS master(
+        server_id INTEGER PRIMARY KEY,
+        server_name TEXT,
+        timezone TEXT DEFAULT 'PST',
+        db_path TEXT,
+        password TEXT,
+        setup_by INTEGER,
+        createad_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+''')
+#creates table messages with id(likely just to organize data, not needed?), char_name (tupper name), content(message),
 #timestamp of message (In utc + 11 if my calculations are correct), channel name, and character key to designated multiple tuppers as same character
 #to be set later on
 
 conn.commit() #this command finalizes a change to a data set
 
 #overall, will likely need to change this to an on start/setup command, assuming this wil be a bot that runs constantly, only needed once
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def setup(ctx): #server creation process, to be ran first
+
+    server = ctx.guild
+    admin = ctx.author 
+
+    await ctx.send(f"Welcome To Coffee Bot! In this setup process, I will ask you a few short questions so that you can get started with data collections! Please make sure we are in a private channel as securit details may be shared, boy am I glad to be in **{guild.name}**!")
+
+    await ctx.send(f"First things first, Please select what timezone you want your messages localized in? Current supported options: PST, UTC, CST, MST")
+
+    timezone_msg = await bot.wait_for('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
+    timezone = timezone_msg.content
+
+    await ctx.send(f"Next up! please set a password needed to access data manipulation/deletion, make sure to store this in a secure place!")
+
+    password_msg = await bot.wait_for('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
+    password = password_msg.content
+    await ctx.send(f"Password has been sent as **{password}**")
+
+    db_name = f"server_{guild.id}.db"
+
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT OR REPLACE INTO servers (guild_id, guild_name, db_name, admin_id, timezone, password) VALUES (?, ?, ?, ?, ?, ?)
+    ''', (guild.id, guild.name, db_name, admin.id, timezone, password))
+    conn.commit()
+    conn.close()
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXIST messages(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            char_name TEXT,
+            content TEXT,
+            timestamp TEXT,
+            channel_name TEXT,
+            char_key TEXT DEFAULT "NA" 
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+    await ctx.send(f'Server set up complete! for a brief tutorial type "Coffee tutorial", to view commands run "Coffee commands". Have fun data collecting!')
+
+
+        
+        
+    
 
 @bot.event #discord command designating a bot occasion
 async def on_ready(): #this is when the bot goes online, 
