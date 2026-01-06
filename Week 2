@@ -1,1 +1,7 @@
-AS OF
+WEEKLY GOALS:
+
+-created a concept for a system that allows for relevant server targetting, will need to test it this week on a smaller scale server 
+-once this system is confirmed to work, next is implementing it among all current commands
+-create 3 new analysis commands (0/3)
+-fix the timezone command in heat map (probably best done by another indepedent function)
+-
