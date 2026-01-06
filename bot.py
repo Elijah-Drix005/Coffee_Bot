@@ -23,19 +23,20 @@ intents.message_content = True  # Needed to read messages
 
 bot = commands.Bot(command_prefix='coffee: ', intents=intents)
 
-conn = sqlite3.connect('messages.db') #command to access the database, if generalized, need to term which database
-cursor = conn.cursor() #the cursor allowing it to browse through the data 
-
-cursor.execute(''' 
-    CREATE TABLE IF NOT EXISTS messages( 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        char_name TEXT,
-        content TEXT,
-        timestamp TEXT,
-        channel_name TEXT,
-        Char_key TEXT DEFAULT 'NA'
-   )
-''')
+#conn = sqlite3.connect('messages.db') #command to access the database, if generalized, need to term which database
+#cursor = conn.cursor() #the cursor allowing it to browse through the data 
+#conn.commit() #committs a change to the data set
+#conn.close() closes data set
+#cursor.execute(''' 
+#    CREATE TABLE IF NOT EXISTS messages( 
+#        id INTEGER PRIMARY KEY AUTOINCREMENT,
+#        char_name TEXT,
+#        content TEXT,
+#        timestamp TEXT,
+#        channel_name TEXT,
+#        Char_key TEXT DEFAULT 'NA'
+#   )
+#''')
 
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS master(
@@ -45,7 +46,7 @@ cursor.execute('''
         db_path TEXT,
         password TEXT,
         setup_by INTEGER,
-        createad_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
 ''')
 #creates table messages with id(likely just to organize data, not needed?), char_name (tupper name), content(message),
@@ -53,7 +54,16 @@ cursor.execute('''
 #to be set later on
 
 conn.commit() #this command finalizes a change to a data set
-
+def server_find(guild_id):
+    #curr_server = f"server_{guild.id}.db"
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor()
+    cursor.execute("""SELECT db_path FROM master WHERE server_id = ?""", (guild.id))
+    target_db = cursor.fetchone()
+    conn.close()
+    if target_db is None:
+        return None
+    return(target_db[0])
 #overall, will likely need to change this to an on start/setup command, assuming this wil be a bot that runs constantly, only needed once
 
 @bot.command()
@@ -74,15 +84,15 @@ async def setup(ctx): #server creation process, to be ran first
 
     password_msg = await bot.wait_for('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
     password = password_msg.content
-    await ctx.send(f"Password has been sent as **{password}**")
+    await ctx.send(f"Password has been sent as **{password}**, please store this in a safe, secure place!")
 
     db_name = f"server_{guild.id}.db"
 
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT OR REPLACE INTO servers (guild_id, guild_name, db_name, admin_id, timezone, password) VALUES (?, ?, ?, ?, ?, ?)
-    ''', (guild.id, guild.name, db_name, admin.id, timezone, password))
+        INSERT OR REPLACE INTO master (server_id, server_name, timezone, db_path, password, setup_by) VALUES (?, ?, ?, ?, ?, ?)
+    ''', (guild.id, guild.name, timezone, db_name, password, admin.id))
     conn.commit()
     conn.close()
 
@@ -117,6 +127,14 @@ async def on_ready(): #this is when the bot goes online,
 @bot.command() #designates a command
 async def scrape(ctx, channel: discord.TextChannel): #collects message history from mentioned channel, Coffee: scrape @channel 
     await ctx.send(f'Remembering the good times from {channel.mention}...') #ctx.send means sending a message
+    target_db = server_find(guild.id)
+    
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    
 
     count = 0 #count initalized to prevent scraping limits and getting bot banned
     async for message in channel.history(limit=None): #access channel.history
@@ -142,6 +160,7 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
         if count % 50 == 0:
             await asyncio.sleep(1)
     conn.commit()
+    conn.close()
     await ctx.send(f'I collected {count} messages from {channel.mention}!')
 
 @bot.command()
