@@ -66,6 +66,20 @@ def server_find(guild_id):
     return(target_db[0])
 #overall, will likely need to change this to an on start/setup command, assuming this wil be a bot that runs constantly, only needed once
 
+def auth_user(target_db):
+    await ctx.send(f"this command requires a password! Please respond with the correct password")
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor()
+    cursor.execute("""SELECT password FROM master WHERE db_path = ?""", (target_db))
+    corr_pass = cursor.fetchone()
+    conn.close()
+    att_pass = await bot.wait_for('message')
+    if att_pass == corr_pass:
+        return 1
+    else: 
+        await ctx.send(f"Inccorect password! please enter command again")
+        return 2 
+    
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def setup(ctx): #server creation process, to be ran first
@@ -125,14 +139,19 @@ async def on_ready(): #this is when the bot goes online,
 #THIS SPOT RESERVED FOR EVENTUAL SETUP HOOK
 
 @bot.command() #designates a command
-async def scrape(ctx, channel: discord.TextChannel): #collects message history from mentioned channel, Coffee: scrape @channel 
-    await ctx.send(f'Remembering the good times from {channel.mention}...') #ctx.send means sending a message
+async def scrape(ctx, channel: discord.TextChannel): #collects message history from mentioned channel, Coffee: scrape @channel
     target_db = server_find(guild.id)
-    
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    if auth_user(target_db) == 2: 
+        return
+    ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    await ctx.send(f'Remembering the good times from {channel.mention}...') #ctx.send means sending a message
+   
 
-    conn = sqlite3.connect(db_name)
+    conn = sqlite3.connect(target_db)
     cursor = conn.cursor()
     
 
@@ -165,11 +184,15 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
 
 @bot.command()
 async def num(ctx, tup_name: str): #counts num of mssgs from specific tupper
+    target_db = server_find(guild.id)
+    
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+
+    conn = sqlite3.connect(target_db)
+    cursor = conn.cursor()
     await ctx.send(f'searching for messages from {tup_name}')
     try:
-
-        conn = sqlite3.connect('messages.db')
-        cursor = conn.cursor()
 
         cursor.execute("SELECT Count(*) FROM messages WHERE char_name = ?", (tup_name,))
         result = cursor.fetchone()
@@ -188,6 +211,18 @@ async def soft_reset(ctx, date: str):
     Deletes messages before a given date (YYYY-MM-DD).
     Example usage: coffee: soft_reset 2024-03-01
     """
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    if auth_user(target_db) == 2: 
+        return
+    
+    
+    
+
+    conn = sqlite3.connect(target_db)
+    cursor = conn.cursor()
 
     try:
         # Convert input to a valid datetime
@@ -215,7 +250,11 @@ async def word_count(ctx, phrase: str, tup_name: str = None):
     Counts the number of times a word or phrase appears in a tupper's messages.
     Example usage: coffee: word_count "hello world" TupperName
     """
-
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+        
     phrase = phrase.lower()
 
     try:
@@ -261,7 +300,10 @@ async def longest_average(ctx):
     finds the tupper with the longest average message length
     command: coffee: longest_average
     """
-
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
     try: 
         conn = sqlite3.connect('messages.db')
         cursor = conn.cursor()
@@ -294,7 +336,13 @@ async def sthread(ctx, thread: discord.Thread):
     Scrapes messages from a specific thread only, with rate limit safety.
     Usage: coffee: scrape_thread #thread-name
     """
-
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    if auth_user(target_db) == 2: 
+        return
+    
     await ctx.send(f"Remembering the good times from {thread.name}...")
 
     count = 0
@@ -307,7 +355,7 @@ async def sthread(ctx, thread: discord.Thread):
             if isinstance(message.channel, discord.Thread) and message.channel.parent:
                 channel_name = message.channel.parent.name
 
-            with sqlite3.connect('messages.db') as conn:
+            with sqlite3.connect('target_db') as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT 1 FROM messages WHERE char_name = ? AND content = ? AND timestamp = ? AND channel_name = ?
@@ -332,7 +380,12 @@ async def scrape_from(ctx, *, since: str):
     Scrapes from a list of designated channels and threads after specific date
     Example: coffee: scrape_from 2025-04-20 13:45
     '''
-
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    if auth_user(target_db) == 2: 
+        return
     try:
         since_dt = datetime.datetime.strptime(since, "%Y-%m-%d %H:%M")
 
@@ -410,6 +463,13 @@ async def scrape_from(ctx, *, since: str):
         await ctx.send("Invalid date format! Use YYYY-MM-DD HH:MM.")
 
 async def scrape_one_channel(channel, since_dt):
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    if auth_user(target_db) == 2: 
+        return
+    
     count = 0
     async for message in channel.history(limit=None, after=since_dt):
         if message.webhook_id is not None:
@@ -421,7 +481,7 @@ async def scrape_one_channel(channel, since_dt):
             if isinstance(channel, discord.Thread) and channel.parent:
                 channel_name = channel.parent.name
 
-            with sqlite3.connect('messages.db') as conn:
+            with sqlite3.connect('target_db') as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT 1 FROM messages WHERE char_name = ? AND content = ? AND timestamp = ? AND channel_name = ?
@@ -440,8 +500,12 @@ async def scrape_one_channel(channel, since_dt):
 @bot.command()
 async def heatmap(ctx):
     """used as an analytic to show what hours of the day have the most activity"""
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
     try:
-        conn = sqlite3.connect('messages.db')
+        conn = sqlite3.connect('target_db')
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -467,8 +531,14 @@ async def heatmap(ctx):
 
 @bot.command()
 async def reply_cutoff(ctx) #cleans the code
+    target_db = server_find(guild.id)
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+        return
+    if auth_user(target_db) == 2: 
+        return
     try:
-        conn = sqlite.connect('messages.db')
+        conn = sqlite.connect('target_db')
         cursor = conn.cursor()
 
         cursor.execute("SELECT rowid, content FROM messages")
