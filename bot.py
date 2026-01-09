@@ -147,7 +147,7 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
     if auth_user(target_db) == 2: 
         return
     ctx.send(f'Server not detected! please setup server with Coffee setup')
-        return
+    return
     await ctx.send(f'Remembering the good times from {channel.mention}...') #ctx.send means sending a message
    
 
@@ -530,7 +530,7 @@ async def heatmap(ctx):
         await ctx.send(f"Error while generating heatmap: {e}")
 
 @bot.command()
-async def reply_cutoff(ctx) #cleans the code
+async def reply_cutoff(ctx): #cleans the code
     target_db = server_find(guild.id)
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
@@ -564,14 +564,14 @@ async def reply_cutoff(ctx) #cleans the code
             return m.author == ctx.author and m.channel == ctx.channel
  
         try: 
-            msg = await. bot.wait_for("message", check=check, timeout=30.0)
+            msg = await bot.wait_for("message", check=check, timeout=30.0)
             content = msg.content
 
             if content == "YES":
                 await ctx.send("confirmed, data has been cleaned!")
                 conn.commit()
                 conn.close()
-            elif: content == "NO":
+            elif content == "NO":
                 await ctx.send("Action aborted.")
                 return
             else:
