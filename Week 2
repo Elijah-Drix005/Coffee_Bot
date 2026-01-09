@@ -4,4 +4,4 @@ WEEKLY GOALS:
 -once this system is confirmed to work, next is implementing it among all current commands
 -create 3 new analysis commands (0/3)
 -fix the timezone command in heat map (probably best done by another indepedent function)
--
+-created an authorization command to provide security to database altering commads
