@@ -116,7 +116,7 @@ async def setup(ctx): #server creation process, to be ran first
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXIST messages(
+        CREATE TABLE IF NOT EXISTS messages(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             char_name TEXT,
             content TEXT,
@@ -147,7 +147,8 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
-    if auth_user(target_db) == 2: 
+    result = await auth_user(ctx, target_db)
+    if result == 2:
         return
     ctx.send(f'Server not detected! please setup server with Coffee setup')
     return
@@ -218,7 +219,8 @@ async def soft_reset(ctx, date: str):
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
-    if auth_user(target_db) == 2: 
+    result = await auth_user(ctx, target_db)
+    if result == 2:
         return
     
     
@@ -343,7 +345,8 @@ async def sthread(ctx, thread: discord.Thread):
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
-    if auth_user(target_db) == 2: 
+    result = await auth_user(ctx, target_db)
+    if result == 2:
         return
     
     await ctx.send(f"Remembering the good times from {thread.name}...")
@@ -387,7 +390,8 @@ async def scrape_from(ctx, *, since: str):
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
-    if auth_user(target_db) == 2: 
+    result = await auth_user(ctx, target_db)
+    if result == 2:
         return
     try:
         since_dt = datetime.datetime.strptime(since, "%Y-%m-%d %H:%M")
@@ -470,7 +474,8 @@ async def scrape_one_channel(channel, since_dt):
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
-    if auth_user(target_db) == 2: 
+    result = await auth_user(ctx, target_db)
+    if result == 2:
         return
     
     count = 0
@@ -538,7 +543,8 @@ async def reply_cutoff(ctx): #cleans the code
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
-    if auth_user(target_db) == 2: 
+    result = await auth_user(ctx, target_db)
+    if result == 2:
         return
     try:
         conn = sqlite.connect('target_db')
