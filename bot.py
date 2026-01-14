@@ -57,7 +57,7 @@ conn.close()
 #to be set later on
 
 conn.commit() #this command finalizes a change to a data set
-def server_find(ctx.guild.id):
+def server_find(guild_id):
     #curr_server = f"server_{guild.id}.db"
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
