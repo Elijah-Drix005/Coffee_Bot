@@ -89,6 +89,12 @@ async def auth_user(target_db):
 async def setup(ctx): #server creation process, to be ran first
 
     server = ctx.guild
+    exists = ctx.guild.id
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor()
+    cursor.execute('''SELECT 1 FROM master WHERE server_id = ?''', (exists))
+    if cursor.fetchone() is not None: 
+        await ctx.send(f"Setup for this server has already been detected, if you want to change information, Please use coffee: settings")
     admin = ctx.author 
 
     await ctx.send(f"Welcome To Coffee Bot! In this setup process, I will ask you a few short questions so that you can get started with data collections! Please make sure we are in a private channel as securit details may be shared!")
@@ -104,7 +110,7 @@ async def setup(ctx): #server creation process, to be ran first
     password = password_msg.content
     await ctx.send(f"Password has been sent as **{password}**, please store this in a safe, secure place!")
 
-    db_name = f"server_{guild.id}.db"
+    db_name = f"server_{ctx.guild.id}.db"
 
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
