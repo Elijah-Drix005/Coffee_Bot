@@ -361,7 +361,7 @@ async def sthread(ctx, thread: discord.Thread):
             if isinstance(message.channel, discord.Thread) and message.channel.parent:
                 channel_name = message.channel.parent.name
 
-            with sqlite3.connect('target_db') as conn:
+            with sqlite3.connect(target_db) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT 1 FROM messages WHERE char_name = ? AND content = ? AND timestamp = ? AND channel_name = ?
@@ -489,7 +489,7 @@ async def scrape_one_channel(channel, since_dt):
             if isinstance(channel, discord.Thread) and channel.parent:
                 channel_name = channel.parent.name
 
-            with sqlite3.connect('target_db') as conn:
+            with sqlite3.connect(target_db) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT 1 FROM messages WHERE char_name = ? AND content = ? AND timestamp = ? AND channel_name = ?
@@ -513,7 +513,7 @@ async def heatmap(ctx):
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
     try:
-        conn = sqlite3.connect('target_db')
+        conn = sqlite3.connect(target_db)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -547,7 +547,7 @@ async def reply_cutoff(ctx): #cleans the code
     if result == 2:
         return
     try:
-        conn = sqlite.connect('target_db')
+        conn = sqlite.connect(target_db)
         cursor = conn.cursor()
 
         cursor.execute("SELECT rowid, content FROM messages")
