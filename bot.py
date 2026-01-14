@@ -56,7 +56,7 @@ conn.close()
 #timestamp of message (In utc + 11 if my calculations are correct), channel name, and character key to designated multiple tuppers as same character
 #to be set later on
 
-conn.commit() #this command finalizes a change to a data set
+#conn.commit() #this command finalizes a change to a data set
 def server_find(guild_id):
     #curr_server = f"server_{guild.id}.db"
     conn = sqlite3.connect('master.db')
