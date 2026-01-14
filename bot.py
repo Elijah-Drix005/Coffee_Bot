@@ -90,7 +90,7 @@ async def setup(ctx): #server creation process, to be ran first
     server = ctx.guild
     admin = ctx.author 
 
-    await ctx.send(f"Welcome To Coffee Bot! In this setup process, I will ask you a few short questions so that you can get started with data collections! Please make sure we are in a private channel as securit details may be shared, boy am I glad to be in **{guild.name}**!")
+    await ctx.send(f"Welcome To Coffee Bot! In this setup process, I will ask you a few short questions so that you can get started with data collections! Please make sure we are in a private channel as securit details may be shared!")
 
     await ctx.send(f"First things first, Please select what timezone you want your messages localized in? Current supported options: PST, UTC, CST, MST")
 
