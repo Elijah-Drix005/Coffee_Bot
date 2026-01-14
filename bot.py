@@ -17,6 +17,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 #    source myenv/bin/activate
 # 3. Run the bot:
 #    python bot.py
+#to stop the bot: Ctrl + C
 intents = discord.Intents.default()
 intents.messages = True #To access Messages I beleive 
 intents.message_content = True  # Needed to read messages
