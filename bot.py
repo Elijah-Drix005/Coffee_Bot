@@ -62,7 +62,7 @@ def server_find(guild_id):
     #curr_server = f"server_{guild.id}.db"
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT db_path FROM master WHERE server_id = ?""", (guild.id))
+    cursor.execute("""SELECT db_path FROM master WHERE server_id = ?""", (guild_id,))
     target_db = cursor.fetchone()
     conn.close()
     if target_db is None:
@@ -70,19 +70,28 @@ def server_find(guild_id):
     return(target_db[0])
 #overall, will likely need to change this to an on start/setup command, assuming this wil be a bot that runs constantly, only needed once
 
-async def auth_user(target_db):
+async def auth_user(ctx, target_db):
     await ctx.send(f"this command requires a password! Please respond with the correct password")
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
-    cursor.execute("""SELECT password FROM master WHERE db_path = ?""", (target_db))
-    corr_pass = cursor.fetchone()
+    cursor.execute("""SELECT password FROM master WHERE db_path = ?""", (target_db,))
+    corr_pass = cursor.fetchone()[0]
     conn.close()
-    att_pass = await bot.wait_for('message')
-    if att_pass == corr_pass:
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+    try:
+        att_pass = await bot.wait_for('message', check=check, timeout=30)
+    except asyncio.TimeoutError:
+        await ctx.send("Authentication timed out, please try again!")
+        return 2
+    if att_pass.content == corr_pass:
         return 1
     else: 
         await ctx.send(f"Inccorect password! please enter command again")
         return 2 
+
+def check(m):
+    return m.author == ctx.author and m.channel == ctx.channel
     
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -157,8 +166,6 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
     result = await auth_user(ctx, target_db)
     if result == 2:
         return
-    ctx.send(f'Server not detected! please setup server with Coffee setup')
-    return
     await ctx.send(f'Remembering the good times from {channel.mention}...') #ctx.send means sending a message
    
 
