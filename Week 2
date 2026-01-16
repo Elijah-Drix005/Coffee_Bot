@@ -10,3 +10,6 @@ WEEKLY GOALS:
 setup - guild name in setup
 
 correction: setup command will likely need to be tweaked even more, playing with how data would be entered
+
+1/16
+tested setup and scrape command, showing correct functionality and entries into DB's
