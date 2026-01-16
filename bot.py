@@ -92,7 +92,7 @@ async def setup(ctx): #server creation process, to be ran first
     exists = ctx.guild.id
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT 1 FROM master WHERE server_id = ?''', (exists))
+    cursor.execute('''SELECT server_name FROM master WHERE server_id = ?''', (exists,))
     if cursor.fetchone() is not None: 
         await ctx.send(f"Setup for this server has already been detected, if you want to change information, Please use coffee: settings")
     admin = ctx.author 
@@ -116,7 +116,7 @@ async def setup(ctx): #server creation process, to be ran first
     cursor = conn.cursor()
     cursor.execute('''
         INSERT OR REPLACE INTO master (server_id, server_name, timezone, db_path, password, setup_by) VALUES (?, ?, ?, ?, ?, ?)
-    ''', (guild.id, guild.name, timezone, db_name, password, admin.id))
+    ''', (ctx.guild.id, ctx.guild.name, timezone, db_name, password, admin.id))
     conn.commit()
     conn.close()
 
