@@ -145,7 +145,7 @@ async def setup(ctx): #server creation process, to be ran first
     conn.commit()
     conn.close()
 
-    await ctx.send(f'Server set up complete! for a brief tutorial type "Coffee tutorial", to view commands run "Coffee commands". Have fun data collecting!')
+    await ctx.send(f'Server set up complete! for a brief tutorial type "Coffee: tutorial", to view commands run "Coffee: commands". I recommend starting with adding channels using "Coffee: channels" Have fun data collecting!')
 
 
         
@@ -210,6 +210,46 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
     conn.commit()
     conn.close()
     await ctx.send(f'I collected {count} messages from {channel.mention}!')
+
+
+
+
+
+
+
+@bot.command()
+async def channels(ctx):
+    target_db = server_find(ctx.guild.id)
+    
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+
+    result = await auth_user(ctx, target_db)
+    if result == 2:
+        return
+
+    conn = sqlite3.connect(target_db)
+    cursor = conn.cursor()
+    await ctx.send(f'Welcome to your channels! this is where you can view/add/remove which channels this bot collects messages from! please respond with what action you would like to take: \n "view": view currently registered channels. \n "add": add new channels to the list. \n "remove": remove channels from the list')
+    chaction_msg = await ctx.bot.waitfor('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
+    chaction = str(chaction_msg.content)
+
+    if chaction == 'view':
+        #view_channels()
+    if chaction == 'add': 
+        #add_channels()
+    if chaction == 'remove':
+        #remove_channels()
+    
+
+
+
+
+
+
+
+
+
 
 @bot.command()
 async def num(ctx, tup_name: str): #counts num of mssgs from specific tupper
@@ -618,7 +658,7 @@ async def reply_cutoff(ctx): #cleans the code
     except Exception as e:
         await ctx.send(f"Error during reply cleanup: {e}")
 
-        
+      
         
 
 
