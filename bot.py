@@ -49,6 +49,7 @@ cursor.execute('''
         password TEXT,
         setup_by INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        
     )
 ''')
 conn.commit()
@@ -149,6 +150,14 @@ async def setup(ctx): #server creation process, to be ran first
 
         
         
+@bot.event
+async def on_ready():
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        ALTER TABLE master
+        ADD COLUMN scrape_trgt TEXT DEFAULT ""
+    ''')
     
 
 @bot.event #discord command designating a bot occasion
