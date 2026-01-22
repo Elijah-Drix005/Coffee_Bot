@@ -248,7 +248,7 @@ async def soft_reset(ctx, date: str):
         reset_date = datetime.datetime.strptime(date, "%Y-%m-%d")
 
         def delete_old_messages():
-            with sqlite3.connect('messages.db') as conn:
+            with sqlite3.connect(target_db) as conn:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM messages WHERE timestamp < ?", (reset_date.strftime("%Y-%m-%d %H:%M:%S"),))
                 conn.commit()
@@ -277,7 +277,7 @@ async def word_count(ctx, phrase: str, tup_name: str = None):
     phrase = phrase.lower()
 
     try:
-        conn = sqlite3.connect('messages.db')
+        conn = sqlite3.connect(target_db)
         cursor = conn.cursor()
         
         if tup_name:
@@ -324,7 +324,7 @@ async def longest_average(ctx):
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
         return
     try: 
-        conn = sqlite3.connect('messages.db')
+        conn = sqlite3.connect(target_db)
         cursor = conn.cursor()
 
         cursor.execute("""
