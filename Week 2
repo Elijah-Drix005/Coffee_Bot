@@ -13,3 +13,13 @@ correction: setup command will likely need to be tweaked even more, playing with
 
 1/16
 tested setup and scrape command, showing correct functionality and entries into DB's
+
+1/22
+-in testing scrape, made massive oversight not realizing command was connecting to original 'messages' accidentally deleted everything, atleast I have a backup...
+-realized within this mistake that my master.db was missing its designated column, did some research, figured out how to add this column internally within SQL viewer.
+-Creating new Channels() master command to create a hub for designated channels to scrape from. to do this I have tasked myself to make 3 commands
+-view_channels(): a command that should display by name what channels are stored in master that the databse should scrape from
+-add_channels(): a command that should append strings of collected channel ids into the column (I do worry about space constraints in both column itself, and in repeating back what channels are stored inside)
+-remove_channels(): a command that should be able to effectively target a specific channel ID and remove it from the string (I worry how to do this cleanly, and alongside previous command how this would work with multiple provided ID's
+
+-goal once these commands are complete are to figure out how to use these commands to then feed into commands such as scrape.
