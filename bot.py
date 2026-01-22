@@ -158,6 +158,8 @@ async def on_ready():
         ALTER TABLE master
         ADD COLUMN scrape_trgt TEXT DEFAULT ""
     ''')
+    conn.commit()
+    conn.close()
     
 
 @bot.event #discord command designating a bot occasion
