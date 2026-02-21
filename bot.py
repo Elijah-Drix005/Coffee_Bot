@@ -53,6 +53,16 @@ cursor.execute('''
     )
 ''')
 conn.commit()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS scrape_chnls(
+        channel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        channel_name TEXT,
+        channel_id TEXT, 
+        server_id TEXT,
+        FOREIGN KEY (server_id) REFRENCES master(server_id)
+    )
+''')
+conn.commit()
 conn.close()
 #creates table messages with id(likely just to organize data, not needed?), char_name (tupper name), content(message),
 #timestamp of message (In utc + 11 if my calculations are correct), channel name, and character key to designated multiple tuppers as same character
@@ -169,7 +179,7 @@ async def on_ready(): #this is when the bot goes online,
 #THIS SPOT RESERVED FOR EVENTUAL SETUP HOOK
 
 @bot.command() #designates a command
-async def scrape(ctx, channel: discord.TextChannel): #collects message history from mentioned channel, Coffee: scrape @channel
+async def scrape(ctx, channel: discord.TextChannel): #collects message history from mentioned channel, Coffee: scrape #channel
     target_db = server_find(ctx.guild.id)
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
@@ -242,6 +252,21 @@ async def channels(ctx):
         #remove_channels()
     
 
+@bot.command()
+async def add_channel(ctx, channel: discord.TextChannel):
+    target_db = server_find(ctx.guild.id)
+
+    if target_db is None: 
+        await ctx.send(f'Server not detected! please setup server with Coffee: setup')
+
+    result = await auth_user(ctx, target_db)
+    if result == 2:
+        return
+    
+    conn = sqlite3.connect('master.db') 
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT scrape_chnls
 
 
 
