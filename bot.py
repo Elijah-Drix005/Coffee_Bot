@@ -253,8 +253,9 @@ async def channels(ctx):
     
 
 @bot.command()
-async def add_channel(ctx, channel: discord.TextChannel):
+async def add_channel(ctx, channel: discord.TextChannel): #adds a channel to designated list of channels, 
     target_db = server_find(ctx.guild.id)
+    
 
     if target_db is None: 
         await ctx.send(f'Server not detected! please setup server with Coffee: setup')
@@ -266,7 +267,12 @@ async def add_channel(ctx, channel: discord.TextChannel):
     conn = sqlite3.connect('master.db') 
     cursor = conn.cursor()
 
-    cursor.execute("SELECT scrape_chnls
+    cursor.execute("""INSERT INTO scrape_chnls (channel_name, channel_id, server_id) VALUES (?, ?, ?)
+    """, (channel.name, message.channel.id, ctx.guild.id))
+
+    conn.committ()
+    conn.close()
+    await ctx.send(f'{channel.id} added tp list!')
 
 
 
