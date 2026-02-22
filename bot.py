@@ -272,8 +272,59 @@ async def add_channel(ctx, channel: discord.TextChannel): #adds a channel to des
 
     conn.committ()
     conn.close()
-    await ctx.send(f'{channel.id} added tp list!')
+    await ctx.send(f'{channel.name} added tp list!')
 
+@bot.command()
+async def view_channels(ctx): 
+    target_db = server_find(ctx.guild.id)
+    
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+
+    result = await auth_user(ctx, target_db)
+    if result == 2:
+        return
+
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor() 
+    
+    cursor.execute("""SELECT channel_name FROM scrape_chnls WHERE server_id = (?) """, (ctx.guild.id))
+
+    target_channels = cursor.fetchall()
+    conn.close()
+
+    for chan in target_channels:
+        output += f"{chan} \n"
+
+    await ctx.send(output)
+
+@bot.command()
+async def remove_channel(ctx, channel: discord.TextChannel):
+    target_db = server_find(ctx.guild.id)
+    
+    if target_db is None:
+        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+
+    result = await auth_user(ctx, target_db)
+    if result == 2:
+        return
+
+    conn = sqlite3.connect('master.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""SELECT channel_name FROM scrape_chnls WHERE server_id = ? AND channel_id = ? VALUES (?, ?)""", (ctx.guild.id, channel.id)
+    target_chan = cursor.fetchone()
+
+    await ctx.send(f'you are plannong to remove {target_chan}? please reply with yes to confirm') 
+    response = await bot.wait_for('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
+    if response == 'yes':
+        cursor.execute("""DELETE FROM scrape_chnls WHERE server_id = ? AND channel_name = ? VALUES (?, ?)""", (ctx.guild.id, target_chan))
+        conn.commit()
+        conn.close()
+    else:
+        await ctx.send(f'Invalid Confirmation! command aborted')
+        conn.close()
+    
 
 
 
