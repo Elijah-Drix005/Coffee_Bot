@@ -227,29 +227,29 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
 
 
 
-@bot.command()
-async def channels(ctx):
-    target_db = server_find(ctx.guild.id)
-    
-    if target_db is None:
-        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+#@bot.command()
+#async def channels(ctx):
+#    target_db = server_find(ctx.guild.id)
+#    
+#    if target_db is None:
+#        await ctx.send(f'Server not detected! please setup server with Coffee setup')
+#
+#    result = await auth_user(ctx, target_db)
+#    if result == 2:
+#        return
 
-    result = await auth_user(ctx, target_db)
-    if result == 2:
-        return
+#    conn = sqlite3.connect(target_db)
+#    cursor = conn.cursor()
+#    await ctx.send(f'Welcome to your channels! this is where you can view/add/remove which channels this bot collects messages from! please respond with what action you would like to take: \n "view": view currently registered channels. \n "add": add new channels to the list. \n "remove": remove channels from the list')
+#    chaction_msg = await ctx.bot.waitfor('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
+#    chaction = str(chaction_msg.content)
 
-    conn = sqlite3.connect(target_db)
-    cursor = conn.cursor()
-    await ctx.send(f'Welcome to your channels! this is where you can view/add/remove which channels this bot collects messages from! please respond with what action you would like to take: \n "view": view currently registered channels. \n "add": add new channels to the list. \n "remove": remove channels from the list')
-    chaction_msg = await ctx.bot.waitfor('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
-    chaction = str(chaction_msg.content)
-
-    if chaction == 'view':
-        #view_channels()
-    if chaction == 'add': 
-        #add_channels()
-    if chaction == 'remove':
-        #remove_channels()
+#    if chaction == 'view':
+#        #view_channels()
+#    if chaction == 'add': 
+#        #add_channels()
+#    if chaction == 'remove':
+#        #remove_channels()
     
 
 @bot.command()
@@ -312,7 +312,7 @@ async def remove_channel(ctx, channel: discord.TextChannel):
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
 
-    cursor.execute("""SELECT channel_name FROM scrape_chnls WHERE server_id = ? AND channel_id = ? VALUES (?, ?)""", (ctx.guild.id, channel.id)
+    cursor.execute("""SELECT channel_name FROM scrape_chnls WHERE server_id = ? AND channel_id = ? VALUES (?, ?)""", (ctx.guild.id, channel.id))
     target_chan = cursor.fetchone()
 
     await ctx.send(f'you are plannong to remove {target_chan}? please reply with yes to confirm') 
