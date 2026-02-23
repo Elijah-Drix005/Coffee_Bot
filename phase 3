@@ -1,0 +1,14 @@
+GOALS OF THIS PHASE:
+
+2/23
+-got add_channel, view_channel, remove_channel to work seemingly as intended, 
+will need to check: 
+-how these channels are stored within the database
+-how this may interact when a channel stored in a different server is refrenced in one 
+
+-from now, will need to build a new Scrape_from() likely to be titled update, that will then take this working data based scrape_chnls stored within master to then make it easy to update channels
+-goal is to get this function finished by the end of this quarter so project can be considered to be in a state ready to test with actual servers in spring quarter. thus actually creating measureable impacts that can be used to feature on my resume. 
+to do that will need:
+-update_db done 
+-a blurb that has my pitch to test said bot
+-a doc that shows how the bot works 
