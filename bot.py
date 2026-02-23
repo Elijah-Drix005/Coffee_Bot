@@ -55,11 +55,11 @@ cursor.execute('''
 conn.commit()
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS scrape_chnls(
-        channel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        table_id INTEGER PRIMARY KEY AUTOINCREMENT,
         channel_name TEXT,
-        channel_id TEXT, 
+        channel_id INTEGER,
         server_id TEXT,
-        FOREIGN KEY (server_id) REFRENCES master(server_id)
+        FOREIGN KEY (server_id) REFeRENCES master (server_id)
     )
 ''')
 conn.commit()
@@ -220,13 +220,7 @@ async def scrape(ctx, channel: discord.TextChannel): #collects message history f
     conn.commit()
     conn.close()
     await ctx.send(f'I collected {count} messages from {channel.mention}!')
-
-
-
-
-
-
-
+    
 #@bot.command()
 #async def channels(ctx):
 #    target_db = server_find(ctx.guild.id)
@@ -268,9 +262,9 @@ async def add_channel(ctx, channel: discord.TextChannel): #adds a channel to des
     cursor = conn.cursor()
 
     cursor.execute("""INSERT INTO scrape_chnls (channel_name, channel_id, server_id) VALUES (?, ?, ?)
-    """, (channel.name, message.channel.id, ctx.guild.id))
+    """, (channel.name, channel.id, ctx.guild.id))
 
-    conn.committ()
+    conn.commit()
     conn.close()
     await ctx.send(f'{channel.name} added tp list!')
 
@@ -280,7 +274,7 @@ async def view_channels(ctx):
     
     if target_db is None:
         await ctx.send(f'Server not detected! please setup server with Coffee setup')
-
+        return
     result = await auth_user(ctx, target_db)
     if result == 2:
         return
@@ -288,13 +282,17 @@ async def view_channels(ctx):
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor() 
     
-    cursor.execute("""SELECT channel_name FROM scrape_chnls WHERE server_id = (?) """, (ctx.guild.id))
+    cursor.execute("""SELECT channel_name, channel_id FROM scrape_chnls WHERE server_id = ? """, (ctx.guild.id,))
 
     target_channels = cursor.fetchall()
     conn.close()
 
-    for chan in target_channels:
-        output += f"{chan} \n"
+    if not target_channels:
+        await ctx.send("No designated channels set yet!")
+        return
+    output = "Designated channels:\n"
+    for chan, cid in target_channels:
+        output += f"<#{cid}> ({chan})\n"
 
     await ctx.send(output)
 
@@ -312,27 +310,26 @@ async def remove_channel(ctx, channel: discord.TextChannel):
     conn = sqlite3.connect('master.db')
     cursor = conn.cursor()
 
-    cursor.execute("""SELECT channel_name FROM scrape_chnls WHERE server_id = ? AND channel_id = ? VALUES (?, ?)""", (ctx.guild.id, channel.id))
+    cursor.execute("""SELECT channel_id FROM scrape_chnls WHERE server_id = ? AND channel_id = ?""", (ctx.guild.id, channel.id))
     target_chan = cursor.fetchone()
 
-    await ctx.send(f'you are plannong to remove {target_chan}? please reply with yes to confirm') 
-    response = await bot.wait_for('message', check=lambda m: m.author == admin and m.channel == ctx.channel)
-    if response == 'yes':
-        cursor.execute("""DELETE FROM scrape_chnls WHERE server_id = ? AND channel_name = ? VALUES (?, ?)""", (ctx.guild.id, target_chan))
+    if not target_chan:
+        await ctx.send("Channel is not within list.")
+        conn.close()
+        return
+    target_cid = target_chan[0]
+
+    await ctx.send(f'you are planning to remove <#{target_cid}>? please reply with yes to confirm') 
+    response = await bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel)
+    if response.content.lower().strip() == 'yes':
+        cursor.execute("""DELETE FROM scrape_chnls WHERE server_id = ? AND channel_id = ?""", (ctx.guild.id, channel.id))
         conn.commit()
+        await ctx.send(f"removed {channel.mention} from channels")
         conn.close()
     else:
         await ctx.send(f'Invalid Confirmation! command aborted')
         conn.close()
     
-
-
-
-
-
-
-
-
 @bot.command()
 async def num(ctx, tup_name: str): #counts num of mssgs from specific tupper
     target_db = server_find(ctx.guild.id)
