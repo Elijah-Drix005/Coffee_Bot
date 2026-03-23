@@ -524,6 +524,11 @@ async def sthread(ctx, thread: discord.Thread):
 
     await ctx.send(f"✅ Remebered {count} messages from thread: {thread.name}")
 
+
+
+
+
+##################### CURRNT###
 @bot.command()
 async def scrape_from(ctx, *, since: str):
     '''
@@ -537,6 +542,9 @@ async def scrape_from(ctx, *, since: str):
     result = await auth_user(ctx, target_db)
     if result == 2:
         return
+
+    target_server = ctx.guild.id
+    
     try:
         since_dt = datetime.datetime.strptime(since, "%Y-%m-%d %H:%M")
 
@@ -563,6 +571,11 @@ async def scrape_from(ctx, *, since: str):
 
     except ValueError:
         await ctx.send("Invalid date format! Use YYYY-MM-DD HH:MM.")
+
+
+
+
+############ CURRENT
 
 async def scrape_one_channel(channel, since_dt):
     target_db = server_find(ctx.guild.id)
